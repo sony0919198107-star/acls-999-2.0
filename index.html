@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>999 急救即時紀錄與品管系統｜曾妍鳳 專科護理師</title>
+<meta name="theme-color" content="#102f4a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+:root{
+  --navy:#102f4a;--navy-dark:#0b2236;--blue:#2684ff;--green:#20a66a;
+  --red:#df4b4b;--orange:#f2a927;--purple:#7650e8;--text:#17324a;
+  --muted:#6d8192;--line:#dce6ed;--bg:#edf2f6;--shadow:0 6px 20px rgba(16,47,74,.08)
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft JhengHei","Noto Sans TC",Arial,sans-serif;line-height:1.45}
+
+/* ==================== 第一層：置頂固定狀態列 (Sticky HUD) ==================== */
+.sticky-hud{
+  position:sticky;top:0;z-index:100;background:var(--navy);color:#fff;
+  padding:10px 18px;box-shadow:0 4px 16px rgba(0,0,0,.18);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px
+}
+.hud-brand{display:flex;align-items:center;gap:10px}
+.hud-brand h1{margin:0;font-size:18px;letter-spacing:.5px}
+.hud-author{font-size:12px;background:rgba(255,255,255,.14);padding:3px 9px;border-radius:6px;font-weight:700}
+.hud-metrics{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.hud-pill{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);padding:5px 12px;border-radius:9px;display:flex;align-items:center;gap:6px;font-size:13px}
+.hud-pill b{font-size:17px;color:#60a5fa}
+.hud-pill.status-active b{color:#4ade80}
+.hud-pill.status-warn b{color:#fbbf24}
+.hud-pill.status-end b{color:#f87171}
+.hud-tools{display:flex;gap:6px}
+.hud-btn{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:700;cursor:pointer}
+.hud-btn.on{background:var(--green);border-color:var(--green)}
+.hud-btn.test-on{background:var(--orange);color:#172a3b;border-color:var(--orange)}
+
+.container{max-width:1440px;margin:auto;padding:14px 16px 36px}
+.card{background:#fff;border-radius:16px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+.card-title{font-size:16px;font-weight:800;color:var(--navy);margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-title-left{display:flex;align-items:center;gap:8px}
+.card-title-left:before{content:"";width:5px;height:20px;background:var(--blue);border-radius:3px}
+
+/* 病人資訊與啟動前歷程（極簡列） */
+.meta-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.meta-input{background:#fff;border:1px solid #cbd8e3;border-radius:9px;padding:8px 12px;font-size:14px;font-weight:700;color:var(--navy);width:170px;outline:none}
+.meta-input:focus{border-color:var(--blue)}
+.pre-cpr-strip{background:#f4f8fc;border:1px solid #c9dcee;border-radius:12px;padding:10px 14px;margin-bottom:14px}
+.pre-cpr-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pre-cpr-row input[type="text"]{padding:7px 10px;border:1px solid #c8d5df;border-radius:8px;font-size:13px;background:#fff}
+.tag-btn{padding:6px 11px;font-size:12px;border-radius:7px;background:#e2ecf5;color:#123a5e;border:1px solid #bfd6ea;cursor:pointer;font-weight:700;transition:.12s}
+.tag-btn:hover{background:#d0e3f4}
+
+/* ==================== 第二層：第一屏核心操作區 ==================== */
+/* 1. 雙倒數引擎 */
+.dual-timer-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.pacing-box{color:#fff;border-radius:15px;padding:14px 18px;transition:all .25s;box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:space-between}
+.cpr-box{background:var(--navy)}
+.epi-box{background:#123f38;border:2px solid #20a66a}
+
+@keyframes pulseWarn{from{transform:scale(1)}to{transform:scale(1.012);box-shadow:0 0 16px rgba(242,169,39,.6)}}
+@keyframes pulseDanger{from{transform:scale(1)}to{transform:scale(1.015);box-shadow:0 0 18px rgba(223,75,75,.75)}}
+.pacing-box.warning10{background:#d97706!important;border-color:#b45309!important;animation:pulseWarn .75s infinite alternate}
+.pacing-box.due{background:#991b1b!important;border-color:#dc2626!important;animation:pulseDanger .75s infinite alternate}
+.pacing-box.waiting{background:#fff3d6!important;color:#704d00!important;border:2px solid #eab308!important}
+
+.pacing-top{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:800;opacity:.9}
+.pacing-mid{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;margin:6px 0}
+.pacing-num{font-size:44px;font-weight:900;line-height:1}
+.cpr-box .pacing-num{color:#60a5fa}
+.epi-box .pacing-num{color:#4ade80}
+.pacing-box.warning10 .pacing-num,.pacing-box.due .pacing-num{color:#fff!important}
+.pacing-box.waiting .pacing-num{color:#b45309!important}
+.pacing-clock{font-size:42px;font-weight:900;letter-spacing:1.5px;line-height:1;text-align:right}
+.progress{height:8px;background:rgba(255,255,255,.22);border-radius:10px;overflow:hidden;margin:6px 0}
+.progress>div{height:100%;background:#60a5fa;width:0%;transition:width .2s}
+.epi-box .progress>div{background:#4ade80}
+.pacing-box.warning10 .progress>div,.pacing-box.due .progress>div{background:#fff!important}
+.pacing-box.waiting .progress>div{background:#b45309!important}
+.pacing-bot{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;font-weight:700}
+
+.int-btn{padding:3px 8px;font-size:11px;border-radius:5px;border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.15);color:#fff;cursor:pointer;font-weight:700}
+.int-btn.active{background:#20a66a;border-color:#20a66a}
+.btn-epi{background:#20a66a;color:#fff;border:0;border-radius:9px;padding:8px 16px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.btn-epi:hover:not(:disabled){filter:brightness(1.1)}
+
+/* 2. 主操作網格：左(流程與心律) ｜ 右(緊急處置與一鍵藥物) */
+.core-grid{display:grid;grid-template-columns:1.05fr 1.25fr;gap:14px}
+
+/* 主控按鈕列 */
+.master-ctrls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+button, .btn-link{border:0;border-radius:10px;padding:11px 12px;font-size:14px;font-weight:800;cursor:pointer;transition:.12s;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+button:disabled{opacity:.4;cursor:not-allowed}
+.primary{background:var(--blue);color:#fff}.green{background:var(--green);color:#fff}.danger{background:var(--red);color:#fff}.orange{background:var(--orange);color:#172a3b}.purple{background:var(--purple);color:#fff}.neutral{background:#e4e9ee;color:#243d52}.dark{background:#35536e;color:#fff}
+
+/* 心律判讀與原地連動區 */
+.rhythm-panel{background:#f8fafc;border:2px solid #d5e2ec;border-radius:13px;padding:12px;transition:.25s}
+.rhythm-panel.check-due{background:#fff8eb;border:3px solid #f59e0b;box-shadow:0 0 0 4px rgba(245,158,11,.18)}
+.rhythm-panel.check-overtime{background:#fef2f2;border:3px solid #dc2626;animation:pulseDanger .8s infinite alternate}
+.check-banner{display:none;justify-content:space-between;align-items:center;background:#fef3c7;color:#92400e;padding:8px 12px;border-radius:9px;margin-bottom:10px;font-weight:800;font-size:14px}
+.rhythm-panel.check-due .check-banner{display:flex}
+.rhythm-panel.check-overtime .check-banner{display:flex;background:#fee2e2;color:#b91c1c}
+.rhythm-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.r-btn{min-height:58px;flex-direction:column;padding:6px 4px;border-radius:9px}
+.r-btn b{font-size:15px}.r-btn small{font-size:10px;opacity:.85}
+.vf{background:#ffd3d3;color:#991b1b}.pvt{background:#ffe0ce;color:#9a3412}.pea{background:#fef08a;color:#854d0e}.asy{background:#e2e8f0;color:#334155}.other{background:#dbeafe;color:#1e40af}
+.next-cycle-cta{display:none;width:100%;margin-top:10px;padding:14px;font-size:16px;background:var(--green);color:#fff;border-radius:10px;box-shadow:0 4px 12px rgba(32,166,106,.35)}
+.next-cycle-cta.show{display:flex}
+
+/* 緊急處置區 */
+.action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.act-btn{min-height:60px;flex-direction:column;padding:8px}
+.act-btn small{font-size:11px;font-weight:600;opacity:.9}
+.btn-lucas.active{background:#0d7a53!important;color:#fff!important;border:2px solid #34d399!important;cursor:default!important}
+
+.sub-drawer{display:none;background:#f1f6fa;border:1px solid #bfd6ea;border-radius:10px;padding:10px;margin-bottom:10px}
+.etco2-bar{display:flex;align-items:center;gap:8px;background:#f4f7fa;padding:8px 12px;border-radius:10px;border:1px solid #dce6ed}
+.etco2-bar input{width:95px;padding:7px 10px;border:2px solid #94a3b8;border-radius:8px;font-size:16px;font-weight:800;text-align:center}
+
+/* 一鍵藥物網格 */
+.med-quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.med-btn{min-height:50px;flex-direction:column;align-items:flex-start;padding:7px 10px;background:#f1f5f9;color:#0f172a;border:1px solid #cbd5e1;text-align:left}
+.med-btn:hover:not(:disabled){background:#e2e8f0;border-color:#94a3b8}
+.med-btn b{font-size:13px}.med-btn small{font-size:10px;color:#475569;font-weight:600}
+.med-btn.highlight-med{background:#f3e8ff;border-color:#d8b4fe;color:#581c87}
+
+/* ==================== 第三層：單一整合時間軸與品管閉環 ==================== */
+.view-tabs{display:flex;gap:6px}
+.tab-btn{padding:5px 11px;font-size:12px;border-radius:7px;background:#eef3f7;color:var(--navy)}
+.tab-btn.active{background:var(--navy);color:#fff}
+.timeline-list{max-height:380px;overflow:auto;border:1px solid #e2e8f0;border-radius:11px;padding:4px 12px;background:#fff}
+.evt-row{display:grid;grid-template-columns:68px 1fr auto;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9;align-items:center;font-size:14px}
+.evt-row:last-child{border-bottom:0}
+.evt-elapsed{font-weight:800;color:var(--blue);font-size:13px}
+.evt-clock{font-size:12px;color:var(--muted);margin-left:6px}
+.btn-undo{padding:3px 8px;font-size:11px;border-radius:5px;background:#fff1f0;color:#cf1322;border:1px solid #ffa39e}
+
+/* 品管總結區（結束後展開） */
+#qiSection{display:none;border:2px solid #93c5fd}
+.qi-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+.kpi-box{background:#f8fafc;border:1px solid #dbe5ec;border-radius:10px;padding:10px 12px}
+.kpi-box small{display:block;font-size:11px;color:var(--muted)}.kpi-box strong{font-size:19px;color:var(--navy)}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.chart-box{border:1px solid #dbe5ec;border-radius:11px;padding:12px;background:#fff}
+
+.copyright-foot{font-size:12px;color:#475569;background:#e2e8f0;border-radius:12px;padding:12px 16px;line-height:1.6}
+
+@media(max-width:1024px){
+  .dual-timer-grid,.core-grid,.charts-row{grid-template-columns:1fr}
+  .qi-kpis{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  .rhythm-grid{grid-template-columns:repeat(3,1fr)}
+  .action-grid,.med-quick-grid{grid-template-columns:repeat(2,1fr)}
+  .master-ctrls{grid-template-columns:repeat(2,1fr)}
+  .pacing-clock{font-size:34px}
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== 第一層：置頂固定狀態列 (Sticky HUD) ==================== -->
+<header class="sticky-hud">
+  <div class="hud-brand">
+    <h1>999 急救即時紀錄與品管系統</h1>
+    <span class="hud-author">專科護理師 曾妍鳳</span>
+  </div>
+  <div class="hud-metrics">
+    <div class="hud-pill" id="hudStatusPill">狀態：<b id="hudStatus">○ 待命</b></div>
+    <div class="hud-pill">Cycle：<b id="hudCycle">0</b></div>
+    <div class="hud-pill">心律：<b id="hudRhythm">未評估</b></div>
+    <div class="hud-pill">總時間：<b id="hudTotalTime">00:00</b></div>
+  </div>
+  <div class="hud-tools">
+    <button type="button" class="hud-btn" id="soundBtn" onclick="toggleSound()">🔕 提示音</button>
+    <button type="button" class="hud-btn" id="testBtn" onclick="toggleTestMode()">🧪 測試(10s)</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- 病人基本資料與啟動前歷程（啟動後自動收合） -->
+  <div class="meta-bar">
+    <input class="meta-input" id="patientIdInput" type="text" placeholder="病人 ID / 病歷號">
+    <input class="meta-input" id="locationInput" type="text" placeholder="地點 / 床號">
+    <button type="button" class="tag-btn" id="togglePreCprBtn" style="display:none;margin-left:auto" onclick="togglePreCprStrip()">＋ 補登啟動前事件</button>
+  </div>
+
+  <div class="pre-cpr-strip" id="preCprStrip">
+    <div class="pre-cpr-row">
+      <strong style="font-size:13px;color:var(--navy)">⏱ 啟動前歷程：</strong>
+      <input id="preCprTimeInput" type="text" style="width:92px;font-weight:700" title="可手動微調時間">
+      <button type="button" class="tag-btn" onclick="setPreCprTag('發現倒地/無反應')">發現倒地</button>
+      <button type="button" class="tag-btn" onclick="setPreCprTag('啟動 999 廣播')">廣播 999</button>
+      <button type="button" class="tag-btn" onclick="setPreCprTag('急救車及除顫器抵達')">急救車抵達</button>
+      <button type="button" class="tag-btn" onclick="setPreCprTag('確認無呼吸脈搏')">確認無脈搏</button>
+      <button type="button" class="tag-btn" onclick="setPreCprTag('建立 IV/IO 管路')">建立 IV/IO</button>
+      <input id="preCprEventInput" type="text" placeholder="或直接輸入事件..." style="flex:1;min-width:140px">
+      <button type="button" class="primary" style="padding:7px 14px;font-size:13px" onclick="recordPreCprEvent()">記錄</button>
+    </div>
+  </div>
+
+  <!-- ==================== 第二層：第一屏核心操作區 ==================== -->
+  <!-- 1. 雙核心倒數儀表板 -->
+  <div class="dual-timer-grid">
+    <!-- 左：CPR 2分鐘循環 -->
+    <div class="pacing-box cpr-box" id="cprBox">
+      <div class="pacing-top">
+        <span>🫀 CPR 2分鐘循環引擎</span>
+        <span id="cprSubStatus">等待啟動</span>
+      </div>
+      <div class="pacing-mid">
+        <div class="pacing-num" id="cycleBig">0</div>
+        <div>
+          <div style="font-weight:800;font-size:15px" id="cycleLabel">尚未開始 CPR</div>
+          <div class="progress"><div id="cycleProgress"></div></div>
+          <div style="font-size:11px;opacity:.85" id="nextCheckLabel">下一次心律評估：--:--</div>
+        </div>
+        <div>
+          <div style="font-size:10px;opacity:.75;text-align:right">CYCLE COUNTDOWN</div>
+          <div class="pacing-clock" id="cycleCountdown">02:00</div>
+        </div>
+      </div>
+      <div class="pacing-bot">
+        <span id="cycleHint">點擊下方「▶ CPR START」開始計時</span>
+      </div>
+    </div>
+
+    <!-- 右：Epinephrine 給藥倒數 -->
+    <div class="pacing-box epi-box" id="epiBox">
+      <div class="pacing-top">
+        <span style="color:#a7f3d0">💊 EPINEPHRINE 給藥引擎</span>
+        <div style="display:flex;align-items:center;gap:4px">
+          <span>間隔:</span>
+          <button type="button" class="int-btn active" id="int3" onclick="setEpiInterval(3)">3m</button>
+          <button type="button" class="int-btn" id="int4" onclick="setEpiInterval(4)">4m</button>
+          <button type="button" class="int-btn" id="int5" onclick="setEpiInterval(5)">5m</button>
+        </div>
+      </div>
+      <div class="pacing-mid">
+        <div class="pacing-num" id="epiBig">0</div>
+        <div>
+          <div style="font-weight:800;font-size:15px" id="epiLabel">尚未給藥</div>
+          <div class="progress"><div id="epiProgress"></div></div>
+          <div style="font-size:11px;opacity:.85" id="epiSubLabel">設定間隔：3 分鐘</div>
+        </div>
+        <div>
+          <div style="font-size:10px;opacity:.75;text-align:right">EPI COUNTDOWN</div>
+          <div class="pacing-clock" id="epiClock">03:00</div>
+        </div>
+      </div>
+      <div class="pacing-bot">
+        <span id="epiHint">準備給予第 1 劑</span>
+        <button type="button" class="btn-epi" onclick="recordEpinephrine()">💉 記錄 Epi 1 mg</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. 左右雙欄操作熱區（免滑動一屏完成） -->
+  <div class="core-grid">
+    <!-- 左欄：主控流程 + 心律判讀原地連動 -->
+    <section class="card" style="margin-bottom:0">
+      <div class="master-ctrls">
+        <button type="button" class="primary" id="startBtn" onclick="startCPR()">▶ CPR START</button>
+        <button type="button" class="danger" id="roscBtn" onclick="recordROSC()" disabled>❤ ROSC</button>
+        <button type="button" class="orange" id="endBtn" onclick="toggleEndPanel()" disabled>■ 結束 CPR</button>
+        <button type="button" class="neutral" onclick="resetAll()">↻ 重置</button>
+      </div>
+
+      <!-- 結束原因快選抽屜 -->
+      <div class="sub-drawer" id="endDrawer" style="background:#fff4d7;border-color:#efca7a">
+        <div style="font-weight:800;font-size:13px;color:#735400;margin-bottom:6px">選擇停止 CPR 原因（非 ROSC）：</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button type="button" class="tag-btn" onclick="confirmEndCPR('急救無效')">急救無效</button>
+          <button type="button" class="tag-btn" onclick="confirmEndCPR('醫療團隊判斷停止')">醫療團隊判斷停止</button>
+          <button type="button" class="tag-btn" onclick="confirmEndCPR('家屬決定停止')">家屬決定停止</button>
+          <button type="button" class="tag-btn" onclick="confirmEndCPR('其他')">其他</button>
+          <button type="button" class="tag-btn" style="background:#fff" onclick="toggleEndPanel()">取消</button>
+        </div>
+      </div>
+
+      <!-- 心律選擇與 2 分鐘評估原地連動框 -->
+      <div class="rhythm-panel" id="rhythmPanel">
+        <div class="check-banner" id="checkBanner">
+          <span>⚠ 2分鐘到！停止按壓評估心律</span>
+          <span style="font-size:18px" id="pauseTimerDisplay">中斷 00:00</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <strong style="font-size:14px;color:var(--navy)">❤ 心律判讀（初始 / 評估 / 變更）</strong>
+          <span style="font-size:13px;font-weight:800;color:var(--blue)" id="rhythmStatusText">尚未選擇</span>
+        </div>
+        <div class="rhythm-grid">
+          <button type="button" class="r-btn vf" onclick="handleRhythmClick('VF')"><b>⚡ VF</b><small>心室顫動</small></button>
+          <button type="button" class="r-btn pvt" onclick="handleRhythmClick('pVT')"><b>⚡ pVT</b><small>無脈搏VT</small></button>
+          <button type="button" class="r-btn pea" onclick="handleRhythmClick('PEA')"><b>○ PEA</b><small>無脈搏電氣</small></button>
+          <button type="button" class="r-btn asy" onclick="handleRhythmClick('Asystole')"><b>— Asystole</b><small>心搏停止</small></button>
+          <button type="button" class="r-btn other" onclick="handleRhythmClick('Other')"><b>◇ Other</b><small>其他心律</small></button>
+        </div>
+        <!-- 點選心律後原地浮現下一循環啟動鈕 -->
+        <button type="button" class="next-cycle-cta" id="nextCycleBtn" onclick="startNextCycle()">▶ 恢復按壓（進入 Cycle 2）</button>
+      </div>
+    </section>
+
+    <!-- 右欄：緊急處置 + 一鍵藥物 -->
+    <section class="card" style="margin-bottom:0">
+      <div class="card-title"><span class="card-title-left">🚨 緊急處置與氣道管理</span></div>
+      <div class="action-grid">
+        <button type="button" class="danger act-btn" onclick="recordDefib()">
+          <b>⚡ Defibrillation</b><small>電擊去顫 (Biphasic)</small>
+        </button>
+        <button type="button" class="primary act-btn btn-lucas" id="lucasBtn" onclick="recordLucas()">
+          <b id="lucasTitle">⚙ LUCAS 架設上機</b><small id="lucasSub">上機後僅評估時暫停</small>
+        </button>
+        <button type="button" class="purple act-btn" onclick="toggleAirwayDrawer()">
+          <b>🫁 Airway 建置</b><small>氣管內管選號 / 氣切 / LMA</small>
+        </button>
+      </div>
+
+      <!-- Airway 選號抽屜 -->
+      <div class="sub-drawer" id="airwayDrawer">
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
+          <strong style="font-size:13px">氣管內管 (ETT)：</strong>
+          <button type="button" class="tag-btn" onclick="recordEtt('6.5 Fr')">6.5 Fr</button>
+          <button type="button" class="tag-btn" onclick="recordEtt('7.0 Fr')">7.0 Fr</button>
+          <button type="button" class="tag-btn" onclick="recordEtt('7.5 Fr')">7.5 Fr</button>
+          <button type="button" class="tag-btn" onclick="recordEtt('8.0 Fr')">8.0 Fr</button>
+          <input id="customEttInput" type="text" placeholder="自訂號數/深度" style="width:115px;padding:5px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:12px">
+          <button type="button" class="green" style="padding:5px 10px;font-size:12px" onclick="recordEtt()">記錄</button>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <strong style="font-size:13px">其他氣道：</strong>
+          <button type="button" class="tag-btn" onclick="recordAirway('Tracheal','氣切管')">Tracheal 氣切管</button>
+          <button type="button" class="tag-btn" onclick="recordAirway('LMA','喉罩')">LMA 喉罩</button>
+          <button type="button" class="tag-btn" style="background:#fff;margin-left:auto" onclick="toggleAirwayDrawer()">關閉</button>
+        </div>
+      </div>
+
+      <!-- ETCO2 快捷列 -->
+      <div class="etco2-bar" style="margin-bottom:12px">
+        <strong style="font-size:14px">📈 ETCO₂：</strong>
+        <input id="etco2Input" type="number" min="0" max="150" placeholder="數值">
+        <span style="font-weight:700;font-size:13px">mmHg</span>
+        <button type="button" class="primary" style="padding:7px 14px;font-size:13px" onclick="recordETCO2()">記錄數值</button>
+        <span id="etco2Hint" style="font-size:12px;color:var(--green);font-weight:700"></span>
+      </div>
+
+      <!-- 一鍵急救藥物區 -->
+      <div class="card-title" style="margin-top:4px">
+        <span class="card-title-left">💊 急救藥物（單擊即記錄）</span>
+        <button type="button" class="tag-btn" onclick="toggleCustomMedDrawer()">✎ 自訂其他藥物</button>
+      </div>
+      <div class="med-quick-grid">
+        <button type="button" class="med-btn highlight-med" onclick="recordQuickDrug('Amiodarone','300 mg','IV/IO')">
+          <b>Amiodarone 300mg</b><small>首劑 bolus IV/IO</small>
+        </button>
+        <button type="button" class="med-btn highlight-med" onclick="recordQuickDrug('Amiodarone','150 mg','IV/IO')">
+          <b>Amiodarone 150mg</b><small>第二劑 IV/IO</small>
+        </button>
+        <button type="button" class="med-btn highlight-med" onclick="recordQuickDrug('Lidocaine','1–1.5 mg/kg','IV/IO')">
+          <b>Lidocaine</b><small>抗心律不整 IV/IO</small>
+        </button>
+        <button type="button" class="med-btn" onclick="recordQuickDrug('Sodium Bicarbonate','50 mEq (2 amp)','IV')">
+          <b>NaHCO₃ 2 amp</b><small>重碳酸鈉 IV</small>
+        </button>
+        <button type="button" class="med-btn" onclick="recordQuickDrug('Calcium Gluconate','1 g (1 amp)','IV')">
+          <b>Calcium 1g</b><small>葡萄糖酸鈣 IV</small>
+        </button>
+        <button type="button" class="med-btn" onclick="recordQuickDrug('Magnesium Sulfate','2 g','IV/IO')">
+          <b>MgSO₄ 2g</b><small>硫酸鎂 IV/IO</small>
+        </button>
+        <button type="button" class="med-btn" onclick="recordQuickDrug('Normal Saline 0.9%','500 mL','IV challenge')">
+          <b>N/S 500 mL</b><small>輸液擴容 IV</small>
+        </button>
+        <button type="button" class="med-btn" onclick="recordQuickDrug('Dopamine','5 mcg/kg/min','IV drip')">
+          <b>Dopamine</b><small>多巴胺升壓 IV drip</small>
+        </button>
+        <button type="button" class="med-btn" onclick="recordQuickDrug('Atropine','1 mg','IV')">
+          <b>Atropine 1mg</b><small>阿托品 IV</small>
+        </button>
+      </div>
+
+      <!-- 罕見藥物自訂抽屜 -->
+      <div class="sub-drawer" id="customMedDrawer" style="margin-top:8px;margin-bottom:0">
+        <div style="display:grid;grid-template-columns:1.5fr 1fr 0.8fr auto;gap:6px">
+          <input id="cMedName" type="text" placeholder="藥名 (如 Norepinephrine)" style="padding:7px;border:1px solid #cbd5e1;border-radius:7px;font-size:13px">
+          <input id="cMedDose" type="text" placeholder="劑量 (如 8 mcg/min)" style="padding:7px;border:1px solid #cbd5e1;border-radius:7px;font-size:13px">
+          <input id="cMedRoute" type="text" value="IV" style="padding:7px;border:1px solid #cbd5e1;border-radius:7px;font-size:13px">
+          <button type="button" class="primary" style="padding:7px 12px;font-size:13px" onclick="recordCustomMed()">＋記錄</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ==================== 第三層：單一整合時間軸與品管閉環 ==================== -->
+  <section class="card" style="margin-top:14px">
+    <div class="card-title">
+      <span class="card-title-left">◷ 999 急救事件時間軸（<span id="eventCount">0</span> 筆）</span>
+      <div class="view-tabs">
+        <button type="button" class="tab-btn active" id="tabChrono" onclick="setTimelineView('chrono')">依時間順序</button>
+        <button type="button" class="tab-btn" id="tabCycle" onclick="setTimelineView('cycle')">依 Cycle 分組</button>
+      </div>
+    </div>
+
+    <div class="timeline-list" id="timelineContainer">
+      <div style="padding:18px;text-align:center;color:var(--muted);font-size:14px">尚無急救事件紀錄</div>
+    </div>
+
+    <!-- 精簡輸出與回饋閉環按鈕列 -->
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center">
+      <button type="button" class="primary" onclick="copyMedicalNote()">📋 一鍵複製護理紀錄</button>
+      <button type="button" class="green" onclick="exportTXT()">📄 下載病程 TXT</button>
+      <button type="button" class="dark" onclick="exportCSV()">📊 下載品管 CSV</button>
+      <span id="copyFeedback" style="font-size:13px;font-weight:800;color:var(--green)"></span>
+      <a href="https://sony0919198107-star.github.io/acls-999/survey.html" target="_blank" class="btn-link orange" style="margin-left:auto">📝 填寫系統使用滿意度</a>
+    </div>
+  </section>
+
+  <!-- 急救結束自動展開：品管指標與 SVG 視覺圖表 -->
+  <section class="card" id="qiSection">
+    <div class="card-title"><span class="card-title-left">📊 CPR 品質指標與品管總結（ACLS QI）</span></div>
+    <div class="qi-kpis" id="qiKpis"></div>
+    <div class="charts-row">
+      <div class="chart-box">
+        <div style="font-weight:800;font-size:14px;margin-bottom:4px">Compression Pause 各 Cycle 中斷秒數（紅柱 ＞10s）</div>
+        <div id="pauseChart" style="height:170px"></div>
+      </div>
+      <div class="chart-box">
+        <div style="font-weight:800;font-size:14px;margin-bottom:4px">ETCO₂ 監測變化趨勢 (mmHg)</div>
+        <div id="etco2Chart" style="height:170px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 版權與免責聲明 -->
+  <div class="copyright-foot" id="copyrightSection">
+    <strong id="copySignature">著作權與臨床聲明：</strong>《999 急救即時紀錄與品管系統》由 <strong>奇美醫療財團法人佳里奇美醫院 專科護理師 曾妍鳳</strong> 設計開發（CC BY-NC-SA 4.0 學術與臨床教學授權）。本工具僅供急救計時輔助與品管紀錄，不自動判讀心電圖或取代醫師醫囑。
+  </div>
+
+</div>
+
+<script>
+/* 防竄改保護 */
+(function(){
+  window.verifyIntegrity = function(){
+    const el = document.getElementById("copyrightSection");
+    if(!el || !el.textContent.includes("曾妍鳳")){
+      document.body.innerHTML = "<h2 style='padding:40px;text-align:center;color:#dc2626'>系統授權宣告異常，已停止運作。</h2>";
+      throw new Error("Integrity check failed");
+    }
+  };
+  window.addEventListener("DOMContentLoaded", () => { verifyIntegrity(); setInterval(verifyIntegrity, 4000); });
+})();
+
+const RHYTHMS = {
+  VF: { label: "VF", zh: "心室顫動" },
+  pVT: { label: "pVT", zh: "無脈搏心室頻脈" },
+  PEA: { label: "PEA", zh: "無脈搏電氣活動" },
+  Asystole: { label: "Asystole", zh: "心搏停止" },
+  Other: { label: "Other", zh: "其他心律" }
+};
+
+let state = {
+  started: false, running: false, rosced: false, endReason: null,
+  startTs: null, cycleStartTs: null, elapsed: 0, cycle: 0,
+  initialRhythm: null, currentRhythm: null,
+  waitingRhythm: false, pauseStartTs: null, pauseElapsed: 0, rhythmCheckedForCycle: false,
+  epiCount: 0, lastEpiTs: null, epiIntervalMin: 3, epiLock: false,
+  lucasActive: false, soundOn: false, testMode: false, lastBeepSec: -1,
+  timelineView: "chrono", events: []
+};
+let ticker = null, audioCtx = null, userEditedPreTime = false;
+
+const pad = n => String(n).padStart(2, "0");
+const fmtSec = s => { s = Math.max(0, Math.floor(s)); return `${pad(Math.floor(s/60))}:${pad(s%60)}`; };
+const nowClock = () => new Date().toLocaleTimeString("zh-TW", { hour12: false });
+const cycleDur = () => state.testMode ? 10 : 120;
+
+/* 音效提示 */
+function playBeep(freq = 880, dur = 0.12) {
+  if (!state.soundOn) return;
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === "suspended") audioCtx.resume();
+    const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + dur);
+  } catch(e) {}
+}
+
+function toggleSound() {
+  state.soundOn = !state.soundOn;
+  const b = document.getElementById("soundBtn");
+  b.textContent = state.soundOn ? "🔔 提示音 ON" : "🔕 提示音";
+  b.classList.toggle("on", state.soundOn);
+  if (state.soundOn) playBeep(880, 0.15);
+}
+
+function toggleTestMode() {
+  if (state.started) { alert("急救進行中無法切換測試模式"); return; }
+  state.testMode = !state.testMode;
+  const b = document.getElementById("testBtn");
+  b.textContent = state.testMode ? "🧪 測試 10s ON" : "🧪 測試(10s)";
+  b.classList.toggle("test-on", state.testMode);
+  document.getElementById("cycleCountdown").textContent = fmtSec(cycleDur());
+}
+
+/* 啟動前歷程 */
+setInterval(() => {
+  const inp = document.getElementById("preCprTimeInput");
+  if (inp && !userEditedPreTime) inp.value = nowClock();
+}, 1000);
+document.getElementById("preCprTimeInput").addEventListener("input", () => userEditedPreTime = true);
+
+function setPreCprTag(txt) { document.getElementById("preCprEventInput").value = txt; }
+function togglePreCprStrip() {
+  const s = document.getElementById("preCprStrip");
+  s.style.display = s.style.display === "none" ? "block" : "none";
+}
+function recordPreCprEvent() {
+  const txt = document.getElementById("preCprEventInput").value.trim();
+  const t = document.getElementById("preCprTimeInput").value.trim() || nowClock();
+  if (!txt) return;
+  addEvent(txt, "PRE_CPR", { clockTime: t }, t);
+  document.getElementById("preCprEventInput").value = "";
+  userEditedPreTime = false;
+  document.getElementById("preCprTimeInput").value = nowClock();
+  updateUI();
+}
+
+/* 事件寫入與撤銷 */
+function addEvent(label, cat, details = {}, customClock = null) {
+  verifyIntegrity();
+  state.events.push({
+    id: "E" + Date.now() + Math.random().toString(16).slice(2, 5),
+    label, cat, details,
+    ts: new Date().toISOString(),
+    clock: customClock || nowClock(),
+    elapsed: state.started ? fmtSec(state.elapsed) : "--:--",
+    cycle: state.cycle,
+    rhythm: state.currentRhythm
+  });
+}
+
+function undoEvent(id) {
+  const target = state.events.find(e => e.id === id);
+  if (!target || !confirm(`確定撤銷這筆紀錄？\n「${target.clock} ${target.label}」`)) return;
+  state.events = state.events.filter(e => e.id !== id);
+  if (target.details?.action === "LUCAS") state.lucasActive = false;
+  updateUI();
+}
+
+/* 核心流程控制 */
+function startCPR() {
+  if (state.started) return;
+  const now = Date.now();
+  state.started = true; state.running = true; state.cycle = 1;
+  state.startTs = now; state.cycleStartTs = now;
+  state.currentRhythm = state.initialRhythm;
+
+  // 啟動後自動收合啟動前歷程面板（極簡階段切換）
+  document.getElementById("preCprStrip").style.display = "none";
+  document.getElementById("togglePreCprBtn").style.display = "inline-flex";
+
+  addEvent(`CPR START${state.currentRhythm ? ` (初始心律: ${state.currentRhythm})` : ""}`, "CPR");
+  updateUI();
+  ticker = setInterval(onTick, 250);
+}
+
+function onTick() {
+  if (!state.running || state.rosced || state.endReason) return;
+  const now = Date.now();
+  state.elapsed = Math.floor((now - state.startTs) / 1000);
+
+  const dur = cycleDur();
+  if (!state.waitingRhythm) {
+    const cElapsed = Math.floor((now - state.cycleStartTs) / 1000);
+    if (cElapsed >= dur) {
+      enterRhythmCheck();
+      return;
+    }
+  } else {
+    state.pauseElapsed = Math.floor((now - state.pauseStartTs) / 1000);
+  }
+  updateTimers();
+}
+
+function enterRhythmCheck() {
+  state.waitingRhythm = true;
+  state.pauseStartTs = Date.now();
+  state.pauseElapsed = 0;
+  state.rhythmCheckedForCycle = false;
+  playBeep(980, 0.25);
+
+  const lucasNote = state.lucasActive ? " (LUCAS 自動暫停評估心律)" : "";
+  addEvent(`CPR Cycle ${state.cycle} 完成，停止按壓評估心律${lucasNote}`, "CYCLE_END");
+  updateUI();
+}
+
+function handleRhythmClick(key) {
+  if (state.rosced || state.endReason) return;
+  const r = RHYTHMS[key];
+  state.currentRhythm = key;
+
+  if (!state.started) {
+    state.initialRhythm = key;
+    addEvent(`初始心律：${r.label} (${r.zh})`, "RHYTHM", { rhythm: key });
+  } else if (state.waitingRhythm) {
+    state.rhythmCheckedForCycle = true;
+    addEvent(`心律評估 (Cycle ${state.cycle})：${r.label} (${r.zh})`, "RHYTHM", { rhythm: key, pauseSec: state.pauseElapsed });
+  } else {
+    addEvent(`心律變更：${r.label} (${r.zh})`, "RHYTHM", { rhythm: key });
+  }
+  updateUI();
+}
+
+function startNextCycle() {
+  if (!state.waitingRhythm || !state.rhythmCheckedForCycle) return;
+  const prevCycle = state.cycle;
+  const pauseSec = state.pauseElapsed;
+  const over10 = pauseSec > 10;
+
+  state.cycle = prevCycle + 1;
+  state.cycleStartTs = Date.now();
+  state.waitingRhythm = false;
+  state.rhythmCheckedForCycle = false;
+
+  const lucasResume = state.lucasActive ? " [LUCAS 接續壓胸]" : "";
+  addEvent(`開始 CPR Cycle ${state.cycle} (中斷 ${pauseSec}s)${lucasResume}`, "CYCLE_START", {
+    previousCycle: prevCycle, pauseSeconds: pauseSec, over10
+  });
+  updateUI();
+}
+
+/* 緊急處置與一鍵藥物 */
+function recordDefib() {
+  if (!state.started || state.rosced || state.endReason) return;
+  const count = state.events.filter(e => e.details?.action === "DEFIB").length + 1;
+  addEvent(`⚡ Defibrillation 電擊第 ${count} 次`, "ACTION", { action: "DEFIB" });
+  updateUI();
+}
+
+function recordLucas() {
+  if (!state.started || state.rosced || state.endReason || state.lucasActive) return;
+  state.lucasActive = true;
+  addEvent("⚙ LUCAS 架設上機（開始機械自動按壓）", "ACTION", { action: "LUCAS" });
+  updateUI();
+}
+
+function toggleAirwayDrawer() {
+  if (!state.started || state.rosced || state.endReason) return;
+  const d = document.getElementById("airwayDrawer");
+  d.style.display = d.style.display === "block" ? "none" : "block";
+}
+function recordEtt(preset) {
+  const size = preset || document.getElementById("customEttInput").value.trim();
+  addEvent(`🫁 Airway：氣管內管 ETT${size ? ` (${size})` : ""}`, "AIRWAY", { type: "ETT", size });
+  document.getElementById("customEttInput").value = "";
+  document.getElementById("airwayDrawer").style.display = "none";
+  updateUI();
+}
+function recordAirway(code, zh) {
+  addEvent(`🫁 Airway：${code} ${zh}`, "AIRWAY", { type: code });
+  document.getElementById("airwayDrawer").style.display = "none";
+  updateUI();
+}
+
+function recordETCO2() {
+  if (!state.started || state.rosced || state.endReason) return;
+  const val = document.getElementById("etco2Input").value;
+  if (val === "") return;
+  addEvent(`📈 ETCO₂：${val} mmHg`, "ETCO2", { etco2: Number(val) });
+  document.getElementById("etco2Input").value = "";
+  document.getElementById("etco2Hint").textContent = `✓ 已記 ${val}`;
+  setTimeout(() => document.getElementById("etco2Hint").textContent = "", 2500);
+  updateUI();
+}
+
+function setEpiInterval(m) {
+  state.epiIntervalMin = m;
+  [3, 4, 5].forEach(x => document.getElementById("int" + x).classList.toggle("active", x === m));
+  updateTimers();
+}
+
+function recordEpinephrine() {
+  if (!state.started || state.rosced || state.endReason || state.epiLock) return;
+  state.epiLock = true;
+  state.epiCount++;
+  state.lastEpiTs = Date.now();
+  addEvent(`💉 Epinephrine 第 ${state.epiCount} 劑 (1 mg IV/IO)`, "MED", { med: "Epinephrine", dose: "1 mg", count: state.epiCount });
+  updateUI();
+  setTimeout(() => state.epiLock = false, 1500);
+}
+
+function recordQuickDrug(name, dose, route) {
+  if (!state.started || state.rosced || state.endReason) return;
+  addEvent(`💊 ${name} ${dose} (${route})`, "MED", { med: name, dose, route });
+  updateUI();
+}
+
+function toggleCustomMedDrawer() {
+  if (!state.started || state.rosced || state.endReason) return;
+  const d = document.getElementById("customMedDrawer");
+  d.style.display = d.style.display === "block" ? "none" : "block";
+}
+function recordCustomMed() {
+  const name = document.getElementById("cMedName").value.trim();
+  const dose = document.getElementById("cMedDose").value.trim();
+  const route = document.getElementById("cMedRoute").value.trim();
+  if (!name) return;
+  addEvent(`💊 ${name}${dose ? " " + dose : ""}${route ? " (" + route + ")" : ""}`, "MED", { med: name, dose, route });
+  document.getElementById("cMedName").value = "";
+  document.getElementById("cMedDose").value = "";
+  document.getElementById("customMedDrawer").style.display = "none";
+  updateUI();
+}
+
+/* 結束與重置 */
+function recordROSC() {
+  if (!state.started || state.rosced || state.endReason) return;
+  state.rosced = true; state.running = false;
+  clearInterval(ticker);
+  addEvent("❤ ROSC（恢復自發性循環）", "OUTCOME");
+  updateUI();
+}
+
+function toggleEndPanel() {
+  const d = document.getElementById("endDrawer");
+  d.style.display = d.style.display === "block" ? "none" : "block";
+}
+function confirmEndCPR(reason) {
+  state.endReason = reason; state.running = false;
+  clearInterval(ticker);
+  addEvent(`■ 結束 CPR（原因：${reason}）`, "OUTCOME");
+  document.getElementById("endDrawer").style.display = "none";
+  updateUI();
+}
+
+function resetAll() {
+  if (state.started && !confirm("確定要清空所有急救紀錄並重新開始嗎？")) return;
+  clearInterval(ticker);
+  const keepSound = state.soundOn, keepTest = state.testMode;
+  state = {
+    started: false, running: false, rosced: false, endReason: null,
+    startTs: null, cycleStartTs: null, elapsed: 0, cycle: 0,
+    initialRhythm: null, currentRhythm: null,
+    waitingRhythm: false, pauseStartTs: null, pauseElapsed: 0, rhythmCheckedForCycle: false,
+    epiCount: 0, lastEpiTs: null, epiIntervalMin: 3, epiLock: false,
+    lucasActive: false, soundOn: keepSound, testMode: keepTest, lastBeepSec: -1,
+    timelineView: "chrono", events: []
+  };
+  document.getElementById("preCprStrip").style.display = "block";
+  document.getElementById("togglePreCprBtn").style.display = "none";
+  document.getElementById("qiSection").style.display = "none";
+  updateUI();
+}
+
+/* ==================== 畫面與計時器更新 ==================== */
+function updateTimers() {
+  document.getElementById("hudTotalTime").textContent = fmtSec(state.elapsed);
+
+  // 1. CPR 倒數
+  const dur = cycleDur();
+  const cElapsed = (state.running && !state.waitingRhythm) ? Math.floor((Date.now() - state.cycleStartTs) / 1000) : 0;
+  const remain = state.waitingRhythm ? 0 : Math.max(0, dur - cElapsed);
+  const cprBox = document.getElementById("cprBox");
+
+  document.getElementById("cycleCountdown").textContent = fmtSec(remain);
+  document.getElementById("cycleProgress").style.width = (state.started ? Math.min(100, (cElapsed / dur) * 100) : 0) + "%";
+
+  cprBox.className = "pacing-box cpr-box";
+  if (state.waitingRhythm) {
+    cprBox.classList.add("waiting");
+    document.getElementById("cycleHint").textContent = "⚠ 請於下方點選評估心律以推進下一循環";
+    document.getElementById("pauseTimerDisplay").textContent = `中斷 ${fmtSec(state.pauseElapsed)}`;
+    const rp = document.getElementById("rhythmPanel");
+    rp.classList.toggle("check-overtime", state.pauseElapsed > 10);
+    rp.classList.toggle("check-due", state.pauseElapsed <= 10);
+  } else if (state.running && remain <= 10 && remain > 0) {
+    cprBox.classList.add("warning10");
+    document.getElementById("cycleHint").textContent = `🔔 剩餘 ${remain} 秒！準備換手與評估心律`;
+    if (state.lastBeepSec !== remain && remain <= 3) { state.lastBeepSec = remain; playBeep(660, 0.1); }
+  } else if (state.running) {
+    document.getElementById("cycleHint").textContent = state.lucasActive ? "● LUCAS 機械按壓運作中" : "● 持續高品質胸外按壓中";
+  }
+
+  // 2. Epi 倒數
+  const epiBox = document.getElementById("epiBox");
+  epiBox.className = "pacing-box epi-box";
+  if (state.epiCount === 0 || !state.lastEpiTs || !state.running) {
+    document.getElementById("epiClock").textContent = fmtSec(state.epiIntervalMin * 60);
+    document.getElementById("epiProgress").style.width = "0%";
+  } else {
+    const target = state.epiIntervalMin * 60;
+    const eElapsed = Math.floor((Date.now() - state.lastEpiTs) / 1000);
+    const eRemain = target - eElapsed;
+    document.getElementById("epiProgress").style.width = Math.min(100, (eElapsed / target) * 100) + "%";
+    if (eRemain > 10) {
+      document.getElementById("epiClock").textContent = fmtSec(eRemain);
+      document.getElementById("epiHint").textContent = `距上次已過 ${fmtSec(eElapsed)}（下一劑：第 ${state.epiCount + 1} 劑）`;
+    } else if (eRemain > 0) {
+      epiBox.classList.add("warning10");
+      document.getElementById("epiClock").textContent = fmtSec(eRemain);
+      document.getElementById("epiHint").textContent = `🔔 倒數 ${eRemain} 秒！請預備抽取 Epinephrine`;
+    } else {
+      epiBox.classList.add("due");
+      document.getElementById("epiClock").textContent = `+${fmtSec(Math.abs(eRemain))}`;
+      document.getElementById("epiHint").textContent = `🚨 給藥時間到！請給予第 ${state.epiCount + 1} 劑`;
+    }
+  }
+}
+
+function setTimelineView(v) {
+  state.timelineView = v;
+  document.getElementById("tabChrono").classList.toggle("active", v === "chrono");
+  document.getElementById("tabCycle").classList.toggle("active", v === "cycle");
+  renderTimeline();
+}
+
+function renderTimeline() {
+  const box = document.getElementById("timelineContainer");
+  document.getElementById("eventCount").textContent = state.events.length;
+  if (!state.events.length) {
+    box.innerHTML = '<div style="padding:18px;text-align:center;color:var(--muted);font-size:14px">尚無急救事件紀錄</div>';
+    return;
+  }
+
+  if (state.timelineView === "chrono") {
+    box.innerHTML = state.events.slice().reverse().map(e => `
+      <div class="evt-row">
+        <div class="evt-elapsed">${e.elapsed}</div>
+        <div><strong>${e.label}</strong><span class="evt-clock">${e.clock}${e.cycle ? ` · Cycle ${e.cycle}` : ""}</span></div>
+        <button type="button" class="btn-undo" onclick="undoEvent('${e.id}')">✕ 撤銷</button>
+      </div>
+    `).join("");
+  } else {
+    const groups = {};
+    state.events.forEach(e => { const c = e.cycle || 0; (groups[c] = groups[c] || []).push(e); });
+    box.innerHTML = Object.keys(groups).map(Number).sort((a,b)=>a-b).map(c => `
+      <div style="padding:8px 0;border-bottom:2px solid #e2e8f0">
+        <div style="font-weight:800;color:var(--navy);background:#f1f5f9;padding:5px 10px;border-radius:6px;font-size:13px">
+          ${c === 0 ? "啟動前 / 就定位歷程" : `CPR Cycle ${c}`}
+        </div>
+        ${groups[c].map(e => `
+          <div class="evt-row">
+            <div class="evt-elapsed">${e.elapsed}</div>
+            <div><strong>${e.label}</strong><span class="evt-clock">${e.clock}</span></div>
+            <button type="button" class="btn-undo" onclick="undoEvent('${e.id}')">✕</button>
+          </div>
+        `).join("")}
+      </div>
+    `).join("");
+  }
+}
+
+function updateUI() {
+  const ended = state.rosced || !!state.endReason;
+  const pill = document.getElementById("hudStatusPill");
+  pill.className = "hud-pill " + (ended ? "status-end" : state.waitingRhythm ? "status-warn" : state.running ? "status-active" : "");
+  document.getElementById("hudStatus").textContent = state.rosced ? "❤ ROSC" : state.endReason ? "■ 已結束" : state.waitingRhythm ? "⚠ 評估心律" : state.running ? "● 急救中" : "○ 待命";
+  document.getElementById("hudCycle").textContent = state.cycle;
+  document.getElementById("hudRhythm").textContent = state.currentRhythm || "未評估";
+
+  document.getElementById("cycleBig").textContent = state.cycle;
+  document.getElementById("cycleLabel").textContent = state.cycle ? `Cycle ${state.cycle} 進行中` : "尚未開始 CPR";
+  document.getElementById("epiBig").textContent = state.epiCount;
+  document.getElementById("epiLabel").textContent = state.epiCount ? `已給藥 ${state.epiCount} 劑` : "尚未給藥";
+
+  document.getElementById("startBtn").disabled = state.started;
+  document.getElementById("roscBtn").disabled = !state.started || ended;
+  document.getElementById("endBtn").disabled = !state.started || ended;
+
+  const rp = document.getElementById("rhythmPanel");
+  if (!state.waitingRhythm) rp.classList.remove("check-due", "check-overtime");
+  document.getElementById("rhythmStatusText").textContent = state.currentRhythm ? `目前：${state.currentRhythm} (${RHYTHMS[state.currentRhythm].zh})` : "尚未選擇";
+
+  const nextBtn = document.getElementById("nextCycleBtn");
+  const showNext = state.waitingRhythm && state.rhythmCheckedForCycle && !ended;
+  nextBtn.classList.toggle("show", showNext);
+  if (showNext) nextBtn.textContent = `▶ 恢復按壓（進入 Cycle ${state.cycle + 1}）`;
+
+  const lucasBtn = document.getElementById("lucasBtn");
+  if (state.lucasActive) {
+    lucasBtn.classList.add("active");
+    document.getElementById("lucasTitle").textContent = "✓ LUCAS 運作中";
+    document.getElementById("lucasSub").textContent = state.waitingRhythm ? "評估心律自動暫停" : "機械持續按壓中";
+  } else {
+    lucasBtn.classList.remove("active");
+    document.getElementById("lucasTitle").textContent = "⚙ LUCAS 架設上機";
+    document.getElementById("lucasSub").textContent = "上機後僅評估時暫停";
+  }
+
+  renderTimeline();
+  updateTimers();
+  if (ended) renderQISection();
+}
+
+/* ==================== 品管報表與匯出 ==================== */
+function getPauses() {
+  return state.events.filter(e => e.cat === "CYCLE_START" && e.details?.pauseSeconds !== undefined)
+    .map(e => ({ cycle: e.details.previousCycle, sec: e.details.pauseSeconds, clock: e.clock }));
+}
+
+function renderQISection() {
+  const sec = document.getElementById("qiSection");
+  sec.style.display = "block";
+  const pauses = getPauses();
+  const over10 = pauses.filter(p => p.sec > 10).length;
+  const maxP = pauses.reduce((m, p) => Math.max(m, p.sec), 0);
+  const defibs = state.events.filter(e => e.details?.action === "DEFIB").length;
+
+  document.getElementById("qiKpis").innerHTML = [
+    ["總 CPR 時間", fmtSec(state.elapsed)],
+    ["總 Cycle / 電擊", `${state.cycle} 輪 / ${defibs} 次`],
+    ["壓胸中斷 ＞10s", `<span style="color:${over10?'#dc2626':'#16a34a'}">${over10} / ${pauses.length} 次</span>`],
+    ["最長中斷秒數", `<span style="color:${maxP>10?'#dc2626':'inherit'}">${maxP} 秒</span>`]
+  ].map(([k,v]) => `<div class="kpi-box"><small>${k}</small><strong>${v}</strong></div>`).join("");
+
+  // SVG 中斷長條圖
+  const pEl = document.getElementById("pauseChart");
+  if (!pauses.length) { pEl.innerHTML = '<div style="padding:60px 0;text-align:center;color:var(--muted);font-size:13px">無中斷紀錄</div>'; }
+  else {
+    const maxV = Math.max(12, ...pauses.map(p => p.sec));
+    const bars = pauses.map((p, i) => {
+      const w = 100 / pauses.length, h = (p.sec / maxV) * 120;
+      const color = p.sec > 10 ? "#dc2626" : "#20a66a";
+      return `<g transform="translate(${i * w}, 0)">
+        <rect x="20%" y="${135 - h}" width="60%" height="${h}" fill="${color}" rx="4"/>
+        <text x="50%" y="${130 - h}" text-anchor="middle" font-size="11" font-weight="bold" fill="${color}">${p.sec}s</text>
+        <text x="50%" y="155" text-anchor="middle" font-size="11" fill="#64748b">C${p.cycle}</text>
+      </g>`;
+    }).join("");
+    pEl.innerHTML = `<svg width="100%" height="100%" viewBox="0 0 400 165">${bars}</svg>`;
+  }
+
+  // SVG ETCO2 折線
+  const ets = state.events.filter(e => e.cat === "ETCO2").map(e => e.details.etco2);
+  const eEl = document.getElementById("etco2Chart");
+  if (!ets.length) { eEl.innerHTML = '<div style="padding:60px 0;text-align:center;color:var(--muted);font-size:13px">無 ETCO₂ 紀錄</div>'; }
+  else {
+    const maxE = Math.max(50, ...ets);
+    const pts = ets.map((v, i) => `${ets.length===1?200:(30 + i*(340/(ets.length-1)))},${135 - (v/maxE)*110}`).join(" ");
+    const dots = ets.map((v, i) => {
+      const cx = ets.length===1?200:(30 + i*(340/(ets.length-1))), cy = 135 - (v/maxE)*110;
+      return `<circle cx="${cx}" cy="${cy}" r="4" fill="#2684ff"/><text x="${cx}" y="${cy-8}" text-anchor="middle" font-size="11" font-weight="bold" fill="#102f4a">${v}</text>`;
+    }).join("");
+    eEl.innerHTML = `<svg width="100%" height="100%" viewBox="0 0 400 165"><polyline fill="none" stroke="#2684ff" stroke-width="3" points="${pts}"/>${dots}</svg>`;
+  }
+}
+
+function buildNoteText() {
+  const pid = document.getElementById("patientIdInput").value.trim();
+  const loc = document.getElementById("locationInput").value.trim();
+  const pauses = getPauses();
+  const over10 = pauses.filter(p => p.sec > 10).length;
+  const lines = [
+    "【999 非預期急救事件紀錄】",
+    `開發者：佳里奇美醫院 專科護理師 曾妍鳳`,
+    pid ? `Patient ID：${pid}` : "",
+    loc ? `Location：${loc}` : "",
+    "----------------------------------------",
+    ...state.events.map(e => `${e.clock} [${e.elapsed}] ${e.label}`),
+    "----------------------------------------",
+    `總 CPR 時間：${fmtSec(state.elapsed)} ｜ 總 Cycle：${state.cycle} 輪`,
+    `胸外按壓中斷：共 ${pauses.length} 次（＞10秒超標：${over10} 次）`,
+    `Epinephrine 總劑量：${state.epiCount} 劑`
+  ].filter(Boolean);
+  return lines.join("\n");
+}
+
+function copyMedicalNote() {
+  navigator.clipboard.writeText(buildNoteText()).then(() => {
+    const fb = document.getElementById("copyFeedback");
+    fb.textContent = "✓ 已複製完整急救病程紀錄！";
+    setTimeout(() => fb.textContent = "", 3000);
+  });
+}
+
+function exportTXT() {
+  const blob = new Blob([buildNoteText()], { type: "text/plain;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `999_Note_${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+}
+
+function exportCSV() {
+  const header = "時間,CPR經過時間,Cycle,事件內容,中斷秒數";
+  const rows = state.events.map(e => `"${e.clock}","${e.elapsed}","${e.cycle}","${e.label.replace(/"/g,'""')}","${e.details?.pauseSeconds ?? ''}"`);
+  const blob = new Blob(["\uFEFF" + [header, ...rows].join("\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `999_QI_Report_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+</script>
+</body>
+</html>
