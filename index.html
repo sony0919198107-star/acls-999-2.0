@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>999 急救即時紀錄與品管系統｜曾妍鳳 專科護理師</title>
+<title>999 急救即時紀錄與品管系統｜曾妍鳳 專科護理師（版權所有・禁止轉用）</title>
 <meta name="theme-color" content="#102f4a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,7 +13,8 @@
   --red:#df4b4b;--orange:#f2a927;--purple:#7650e8;--text:#17324a;
   --muted:#6d8192;--line:#dce6ed;--bg:#edf2f6;--shadow:0 6px 20px rgba(16,47,74,.08)
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}
+input,textarea{-webkit-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text}
 body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft JhengHei","Noto Sans TC",Arial,sans-serif;line-height:1.45}
 
 /* ==================== 第一層：置頂固定狀態列 (Sticky HUD) ==================== */
@@ -53,7 +54,6 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft Jhen
 .tag-btn:hover{background:#d0e3f4}
 
 /* ==================== 第二層：第一屏核心操作區 ==================== */
-/* 1. 雙倒數引擎 */
 .dual-timer-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 .pacing-box{color:#fff;border-radius:15px;padding:14px 18px;transition:all .25s;box-shadow:var(--shadow);display:flex;flex-direction:column;justify-content:space-between}
 .cpr-box{background:var(--navy)}
@@ -85,16 +85,12 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:"Microsoft Jhen
 .btn-epi{background:#20a66a;color:#fff;border:0;border-radius:9px;padding:8px 16px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .btn-epi:hover:not(:disabled){filter:brightness(1.1)}
 
-/* 2. 主操作網格：左(流程與心律) ｜ 右(緊急處置與一鍵藥物) */
 .core-grid{display:grid;grid-template-columns:1.05fr 1.25fr;gap:14px}
-
-/* 主控按鈕列 */
 .master-ctrls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
 button, .btn-link{border:0;border-radius:10px;padding:11px 12px;font-size:14px;font-weight:800;cursor:pointer;transition:.12s;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:5px}
 button:disabled{opacity:.4;cursor:not-allowed}
 .primary{background:var(--blue);color:#fff}.green{background:var(--green);color:#fff}.danger{background:var(--red);color:#fff}.orange{background:var(--orange);color:#172a3b}.purple{background:var(--purple);color:#fff}.neutral{background:#e4e9ee;color:#243d52}.dark{background:#35536e;color:#fff}
 
-/* 心律判讀與原地連動區 */
 .rhythm-panel{background:#f8fafc;border:2px solid #d5e2ec;border-radius:13px;padding:12px;transition:.25s}
 .rhythm-panel.check-due{background:#fff8eb;border:3px solid #f59e0b;box-shadow:0 0 0 4px rgba(245,158,11,.18)}
 .rhythm-panel.check-overtime{background:#fef2f2;border:3px solid #dc2626;animation:pulseDanger .8s infinite alternate}
@@ -108,7 +104,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .next-cycle-cta{display:none;width:100%;margin-top:10px;padding:14px;font-size:16px;background:var(--green);color:#fff;border-radius:10px;box-shadow:0 4px 12px rgba(32,166,106,.35)}
 .next-cycle-cta.show{display:flex}
 
-/* 緊急處置區 */
 .action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
 .act-btn{min-height:60px;flex-direction:column;padding:8px}
 .act-btn small{font-size:11px;font-weight:600;opacity:.9}
@@ -118,7 +113,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .etco2-bar{display:flex;align-items:center;gap:8px;background:#f4f7fa;padding:8px 12px;border-radius:10px;border:1px solid #dce6ed}
 .etco2-bar input{width:95px;padding:7px 10px;border:2px solid #94a3b8;border-radius:8px;font-size:16px;font-weight:800;text-align:center}
 
-/* 一鍵藥物網格 */
 .med-quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
 .med-btn{min-height:50px;flex-direction:column;align-items:flex-start;padding:7px 10px;background:#f1f5f9;color:#0f172a;border:1px solid #cbd5e1;text-align:left}
 .med-btn:hover:not(:disabled){background:#e2e8f0;border-color:#94a3b8}
@@ -136,7 +130,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .evt-clock{font-size:12px;color:var(--muted);margin-left:6px}
 .btn-undo{padding:3px 8px;font-size:11px;border-radius:5px;background:#fff1f0;color:#cf1322;border:1px solid #ffa39e}
 
-/* 品管總結區（結束後展開） */
 #qiSection{display:none;border:2px solid #93c5fd}
 .qi-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
 .kpi-box{background:#f8fafc;border:1px solid #dbe5ec;border-radius:10px;padding:10px 12px}
@@ -144,7 +137,12 @@ button:disabled{opacity:.4;cursor:not-allowed}
 .charts-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 .chart-box{border:1px solid #dbe5ec;border-radius:11px;padding:12px;background:#fff}
 
-.copyright-foot{font-size:12px;color:#475569;background:#e2e8f0;border-radius:12px;padding:12px 16px;line-height:1.6}
+/* 嚴格版權與禁止轉用聲明欄 */
+.copyright-foot{
+  font-size:13px;color:#7f1d1d;background:#fef2f2;border:2px solid #fca5a5;
+  border-radius:12px;padding:14px 18px;line-height:1.7;font-weight:600
+}
+.copyright-foot strong{color:#991b1b;font-weight:900}
 
 @media(max-width:1024px){
   .dual-timer-grid,.core-grid,.charts-row{grid-template-columns:1fr}
@@ -158,13 +156,13 @@ button:disabled{opacity:.4;cursor:not-allowed}
 }
 </style>
 </head>
-<body>
+<body oncontextmenu="return false;" ondragstart="return false;" onselectstart="return false;">
 
 <!-- ==================== 第一層：置頂固定狀態列 (Sticky HUD) ==================== -->
 <header class="sticky-hud">
   <div class="hud-brand">
     <h1>999 急救即時紀錄與品管系統</h1>
-    <span class="hud-author">專科護理師 曾妍鳳</span>
+    <span class="hud-author">專科護理師 曾妍鳳 製（版權所有・禁止轉用）</span>
   </div>
   <div class="hud-metrics">
     <div class="hud-pill" id="hudStatusPill">狀態：<b id="hudStatus">○ 待命</b></div>
@@ -202,7 +200,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
   </div>
 
   <!-- ==================== 第二層：第一屏核心操作區 ==================== -->
-  <!-- 1. 雙核心倒數儀表板 -->
   <div class="dual-timer-grid">
     <!-- 左：CPR 2分鐘循環 -->
     <div class="pacing-box cpr-box" id="cprBox">
@@ -257,9 +254,8 @@ button:disabled{opacity:.4;cursor:not-allowed}
     </div>
   </div>
 
-  <!-- 2. 左右雙欄操作熱區（免滑動一屏完成） -->
+  <!-- 主操作網格 -->
   <div class="core-grid">
-    <!-- 左欄：主控流程 + 心律判讀原地連動 -->
     <section class="card" style="margin-bottom:0">
       <div class="master-ctrls">
         <button type="button" class="primary" id="startBtn" onclick="startCPR()">▶ CPR START</button>
@@ -268,7 +264,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
         <button type="button" class="neutral" onclick="resetAll()">↻ 重置</button>
       </div>
 
-      <!-- 結束原因快選抽屜 -->
       <div class="sub-drawer" id="endDrawer" style="background:#fff4d7;border-color:#efca7a">
         <div style="font-weight:800;font-size:13px;color:#735400;margin-bottom:6px">選擇停止 CPR 原因（非 ROSC）：</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -280,7 +275,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
         </div>
       </div>
 
-      <!-- 心律選擇與 2 分鐘評估原地連動框 -->
       <div class="rhythm-panel" id="rhythmPanel">
         <div class="check-banner" id="checkBanner">
           <span>⚠ 2分鐘到！停止按壓評估心律</span>
@@ -297,12 +291,10 @@ button:disabled{opacity:.4;cursor:not-allowed}
           <button type="button" class="r-btn asy" onclick="handleRhythmClick('Asystole')"><b>— Asystole</b><small>心搏停止</small></button>
           <button type="button" class="r-btn other" onclick="handleRhythmClick('Other')"><b>◇ Other</b><small>其他心律</small></button>
         </div>
-        <!-- 點選心律後原地浮現下一循環啟動鈕 -->
         <button type="button" class="next-cycle-cta" id="nextCycleBtn" onclick="startNextCycle()">▶ 恢復按壓（進入 Cycle 2）</button>
       </div>
     </section>
 
-    <!-- 右欄：緊急處置 + 一鍵藥物 -->
     <section class="card" style="margin-bottom:0">
       <div class="card-title"><span class="card-title-left">🚨 緊急處置與氣道管理</span></div>
       <div class="action-grid">
@@ -317,7 +309,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
         </button>
       </div>
 
-      <!-- Airway 選號抽屜 -->
       <div class="sub-drawer" id="airwayDrawer">
         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:8px">
           <strong style="font-size:13px">氣管內管 (ETT)：</strong>
@@ -336,7 +327,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
         </div>
       </div>
 
-      <!-- ETCO2 快捷列 -->
       <div class="etco2-bar" style="margin-bottom:12px">
         <strong style="font-size:14px">📈 ETCO₂：</strong>
         <input id="etco2Input" type="number" min="0" max="150" placeholder="數值">
@@ -345,7 +335,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
         <span id="etco2Hint" style="font-size:12px;color:var(--green);font-weight:700"></span>
       </div>
 
-      <!-- 一鍵急救藥物區 -->
       <div class="card-title" style="margin-top:4px">
         <span class="card-title-left">💊 急救藥物（單擊即記錄）</span>
         <button type="button" class="tag-btn" onclick="toggleCustomMedDrawer()">✎ 自訂其他藥物</button>
@@ -380,7 +369,6 @@ button:disabled{opacity:.4;cursor:not-allowed}
         </button>
       </div>
 
-      <!-- 罕見藥物自訂抽屜 -->
       <div class="sub-drawer" id="customMedDrawer" style="margin-top:8px;margin-bottom:0">
         <div style="display:grid;grid-template-columns:1.5fr 1fr 0.8fr auto;gap:6px">
           <input id="cMedName" type="text" placeholder="藥名 (如 Norepinephrine)" style="padding:7px;border:1px solid #cbd5e1;border-radius:7px;font-size:13px">
@@ -406,9 +394,8 @@ button:disabled{opacity:.4;cursor:not-allowed}
       <div style="padding:18px;text-align:center;color:var(--muted);font-size:14px">尚無急救事件紀錄</div>
     </div>
 
-    <!-- 精簡輸出與回饋閉環按鈕列 -->
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center">
-      <button type="button" class="primary" onclick="copyMedicalNote()">📋 一鍵複製護理紀錄</button>
+      <button type="button" class="primary" onclick="copyMedicalNote()">📋 一鍵複製護理紀錄（可貼上病歷）</button>
       <button type="button" class="green" onclick="exportTXT()">📄 下載病程 TXT</button>
       <button type="button" class="dark" onclick="exportCSV()">📊 下載品管 CSV</button>
       <span id="copyFeedback" style="font-size:13px;font-weight:800;color:var(--green)"></span>
@@ -432,24 +419,56 @@ button:disabled{opacity:.4;cursor:not-allowed}
     </div>
   </section>
 
-  <!-- 版權與免責聲明 -->
+  <!-- 嚴格版權宣告與禁止轉用欄 -->
   <div class="copyright-foot" id="copyrightSection">
-    <strong id="copySignature">著作權與臨床聲明：</strong>《999 急救即時紀錄與品管系統》由 <strong>奇美醫療財團法人佳里奇美醫院 專科護理師 曾妍鳳</strong> 設計開發（CC BY-NC-SA 4.0 學術與臨床教學授權）。本工具僅供急救計時輔助與品管紀錄，不自動判讀心電圖或取代醫師醫囑。
+    <strong id="copySignature">⛔ 版權所有・禁止複製、拷貝與轉用（All Rights Reserved）：</strong><br>
+    1. 本系統《999 急救即時紀錄與品管系統》之介面架構、雙核心倒數邏輯、按壓中斷品管演算法及原始碼，著作權全數歸屬 <strong>奇美醫療財團法人佳里奇美醫院 專科護理師 曾妍鳳</strong> 所有。<br>
+    2. <strong>未經原開發者書面授權，嚴禁任何個人或機構進行複製、拷貝、修改、重製、散布或轉作他用</strong>，違者將依法追究智慧財產權責任。<br>
+    3. 本工具僅供原開發者授權之急救計時輔助與品管紀錄使用，不自動判讀心電圖或取代醫師臨床醫囑（唯獨「一鍵複製護理紀錄」功能允許醫護人員複製病程文字貼入病歷）。
   </div>
 
 </div>
 
 <script>
-/* 防竄改保護 */
-(function(){
+/* ==================== 版權與防複製・防竄改保護引擎 ==================== */
+(function setupProtection(){
+  // 阻擋開發者工具、另存新檔、檢視原始碼及未經允許之全選複製快捷鍵
+  document.addEventListener("keydown", function(e){
+    const isInput = ["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName);
+    if (
+      e.key === "F12" ||
+      (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key.toUpperCase())) ||
+      (e.ctrlKey && ["u", "s"].includes(e.key.toLowerCase())) ||
+      (!isInput && e.ctrlKey && ["c", "a", "x"].includes(e.key.toLowerCase()))
+    ) {
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  // 監控版權宣告與「禁止複製、拷貝與轉用」字樣是否被竄改或隱藏
   window.verifyIntegrity = function(){
     const el = document.getElementById("copyrightSection");
-    if(!el || !el.textContent.includes("曾妍鳳")){
-      document.body.innerHTML = "<h2 style='padding:40px;text-align:center;color:#dc2626'>系統授權宣告異常，已停止運作。</h2>";
-      throw new Error("Integrity check failed");
+    const sig = document.getElementById("copySignature");
+    const valid = el && sig &&
+                  el.textContent.includes("曾妍鳳") &&
+                  el.textContent.includes("禁止複製、拷貝與轉用") &&
+                  window.getComputedStyle(el).display !== "none" &&
+                  window.getComputedStyle(el).visibility !== "hidden" &&
+                  el.offsetHeight > 0;
+    if (!valid) {
+      document.body.innerHTML = `
+        <div style="background:#102f4a;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;font-family:sans-serif">
+          <h1 style="color:#f87171;font-size:32px;margin-bottom:12px">⛔ 系統版權宣告異常・已鎖定停用</h1>
+          <p style="font-size:16px;max-width:560px;line-height:1.7;color:#e2e8f0">
+            本系統為 <strong>專科護理師 曾妍鳳</strong> 原創所有，禁止複製、拷貝與轉用。<br>
+            偵測到底層版權聲明已被移除或竄改，系統已自動停止運作。
+          </p>
+        </div>`;
+      throw new Error("Copyright protection triggered.");
     }
   };
-  window.addEventListener("DOMContentLoaded", () => { verifyIntegrity(); setInterval(verifyIntegrity, 4000); });
+  window.addEventListener("DOMContentLoaded", () => { verifyIntegrity(); setInterval(verifyIntegrity, 3000); });
 })();
 
 const RHYTHMS = {
@@ -476,7 +495,6 @@ const fmtSec = s => { s = Math.max(0, Math.floor(s)); return `${pad(Math.floor(s
 const nowClock = () => new Date().toLocaleTimeString("zh-TW", { hour12: false });
 const cycleDur = () => state.testMode ? 10 : 120;
 
-/* 音效提示 */
 function playBeep(freq = 880, dur = 0.12) {
   if (!state.soundOn) return;
   try {
@@ -508,7 +526,6 @@ function toggleTestMode() {
   document.getElementById("cycleCountdown").textContent = fmtSec(cycleDur());
 }
 
-/* 啟動前歷程 */
 setInterval(() => {
   const inp = document.getElementById("preCprTimeInput");
   if (inp && !userEditedPreTime) inp.value = nowClock();
@@ -531,7 +548,6 @@ function recordPreCprEvent() {
   updateUI();
 }
 
-/* 事件寫入與撤銷 */
 function addEvent(label, cat, details = {}, customClock = null) {
   verifyIntegrity();
   state.events.push({
@@ -553,7 +569,6 @@ function undoEvent(id) {
   updateUI();
 }
 
-/* 核心流程控制 */
 function startCPR() {
   if (state.started) return;
   const now = Date.now();
@@ -561,7 +576,6 @@ function startCPR() {
   state.startTs = now; state.cycleStartTs = now;
   state.currentRhythm = state.initialRhythm;
 
-  // 啟動後自動收合啟動前歷程面板（極簡階段切換）
   document.getElementById("preCprStrip").style.display = "none";
   document.getElementById("togglePreCprBtn").style.display = "inline-flex";
 
@@ -635,7 +649,6 @@ function startNextCycle() {
   updateUI();
 }
 
-/* 緊急處置與一鍵藥物 */
 function recordDefib() {
   if (!state.started || state.rosced || state.endReason) return;
   const count = state.events.filter(e => e.details?.action === "DEFIB").length + 1;
@@ -718,7 +731,6 @@ function recordCustomMed() {
   updateUI();
 }
 
-/* 結束與重置 */
 function recordROSC() {
   if (!state.started || state.rosced || state.endReason) return;
   state.rosced = true; state.running = false;
@@ -758,11 +770,9 @@ function resetAll() {
   updateUI();
 }
 
-/* ==================== 畫面與計時器更新 ==================== */
 function updateTimers() {
   document.getElementById("hudTotalTime").textContent = fmtSec(state.elapsed);
 
-  // 1. CPR 倒數
   const dur = cycleDur();
   const cElapsed = (state.running && !state.waitingRhythm) ? Math.floor((Date.now() - state.cycleStartTs) / 1000) : 0;
   const remain = state.waitingRhythm ? 0 : Math.max(0, dur - cElapsed);
@@ -787,7 +797,6 @@ function updateTimers() {
     document.getElementById("cycleHint").textContent = state.lucasActive ? "● LUCAS 機械按壓運作中" : "● 持續高品質胸外按壓中";
   }
 
-  // 2. Epi 倒數
   const epiBox = document.getElementById("epiBox");
   epiBox.className = "pacing-box epi-box";
   if (state.epiCount === 0 || !state.lastEpiTs || !state.running) {
@@ -898,7 +907,6 @@ function updateUI() {
   if (ended) renderQISection();
 }
 
-/* ==================== 品管報表與匯出 ==================== */
 function getPauses() {
   return state.events.filter(e => e.cat === "CYCLE_START" && e.details?.pauseSeconds !== undefined)
     .map(e => ({ cycle: e.details.previousCycle, sec: e.details.pauseSeconds, clock: e.clock }));
@@ -919,7 +927,6 @@ function renderQISection() {
     ["最長中斷秒數", `<span style="color:${maxP>10?'#dc2626':'inherit'}">${maxP} 秒</span>`]
   ].map(([k,v]) => `<div class="kpi-box"><small>${k}</small><strong>${v}</strong></div>`).join("");
 
-  // SVG 中斷長條圖
   const pEl = document.getElementById("pauseChart");
   if (!pauses.length) { pEl.innerHTML = '<div style="padding:60px 0;text-align:center;color:var(--muted);font-size:13px">無中斷紀錄</div>'; }
   else {
@@ -936,7 +943,6 @@ function renderQISection() {
     pEl.innerHTML = `<svg width="100%" height="100%" viewBox="0 0 400 165">${bars}</svg>`;
   }
 
-  // SVG ETCO2 折線
   const ets = state.events.filter(e => e.cat === "ETCO2").map(e => e.details.etco2);
   const eEl = document.getElementById("etco2Chart");
   if (!ets.length) { eEl.innerHTML = '<div style="padding:60px 0;text-align:center;color:var(--muted);font-size:13px">無 ETCO₂ 紀錄</div>'; }
@@ -951,32 +957,59 @@ function renderQISection() {
   }
 }
 
+/* 純淨病歷文字格式（專供「一鍵複製護理紀錄」貼上正式病歷使用） */
 function buildNoteText() {
   const pid = document.getElementById("patientIdInput").value.trim();
   const loc = document.getElementById("locationInput").value.trim();
   const pauses = getPauses();
   const over10 = pauses.filter(p => p.sec > 10).length;
+  const maxP = pauses.reduce((m, p) => Math.max(m, p.sec), 0);
+
   const lines = [
-    "【999 非預期急救事件紀錄】",
-    `開發者：佳里奇美醫院 專科護理師 曾妍鳳`,
-    pid ? `Patient ID：${pid}` : "",
-    loc ? `Location：${loc}` : "",
+    "【999 非預期急救事件護理紀錄】",
+    pid ? `病歷號 (Patient ID)：${pid}` : "",
+    loc ? `床號 / 地點 (Location)：${loc}` : "",
     "----------------------------------------",
     ...state.events.map(e => `${e.clock} [${e.elapsed}] ${e.label}`),
     "----------------------------------------",
-    `總 CPR 時間：${fmtSec(state.elapsed)} ｜ 總 Cycle：${state.cycle} 輪`,
-    `胸外按壓中斷：共 ${pauses.length} 次（＞10秒超標：${over10} 次）`,
-    `Epinephrine 總劑量：${state.epiCount} 劑`
+    `總 CPR 時間：${fmtSec(state.elapsed)} ｜ 總循環數：${state.cycle} 輪`,
+    `胸外按壓中斷：共 ${pauses.length} 次（＞10秒：${over10} 次，最長中斷：${maxP} 秒）`,
+    `Epinephrine 總給藥：${state.epiCount} 劑`,
+    state.rosced ? "急救結果：ROSC（恢復自發性循環）" : state.endReason ? `急救結果：結束 CPR（原因：${state.endReason}）` : ""
   ].filter(Boolean);
   return lines.join("\n");
 }
 
+/* 專屬授權通道：唯獨此按鈕允許將病歷文字寫入剪貼簿 */
 function copyMedicalNote() {
-  navigator.clipboard.writeText(buildNoteText()).then(() => {
-    const fb = document.getElementById("copyFeedback");
-    fb.textContent = "✓ 已複製完整急救病程紀錄！";
-    setTimeout(() => fb.textContent = "", 3000);
-  });
+  const noteText = buildNoteText();
+  const fb = document.getElementById("copyFeedback");
+  const showSuccess = () => {
+    fb.textContent = "✓ 護理紀錄已複製！可直接至病歷系統貼上 (Ctrl+V)";
+    setTimeout(() => fb.textContent = "", 4000);
+  };
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(noteText).then(showSuccess).catch(() => fallbackCopy(noteText, showSuccess));
+  } else {
+    fallbackCopy(noteText, showSuccess);
+  }
+}
+
+function fallbackCopy(text, callback) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.left = "-9999px";
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand("copy");
+    if (callback) callback();
+  } catch (e) {
+    alert("複製失敗，請改用「下載病程 TXT」功能。");
+  }
+  document.body.removeChild(ta);
 }
 
 function exportTXT() {
